@@ -1,0 +1,31 @@
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 3.0
+  SuggestExtensions: false
+
+# Disable some strict rules for test files and gemspec
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
+    - '*.gemspec'
+
+Metrics/MethodLength:
+  Max: 30
+
+Metrics/ClassLength:
+  Max: 150
+
+Metrics/AbcSize:
+  Max: 80
+
+Metrics/CyclomaticComplexity:
+  Max: 40
+
+Metrics/PerceivedComplexity:
+  Max: 40
+
+Metrics/ParameterLists:
+  Max: 5
+
+Layout/LineLength:
+  Max: 120
