@@ -1,8 +1,8 @@
 PATH
   remote: .
   specs:
-    laneful-ruby (1.0.0)
-      httparty (~> 0.21.0)
+    laneful-ruby (1.0.1)
+      httparty (~> 0.21)
       json (~> 2.6)
 
 GEM
@@ -72,18 +72,17 @@ GEM
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
-    yard (0.9.37)
 
 PLATFORMS
   x86_64-darwin-24
 
 DEPENDENCIES
+  bundler (~> 2.0)
   laneful-ruby!
   rake (~> 13.0)
-  rspec (~> 3.12)
-  rubocop (~> 1.50)
-  webmock (~> 3.18)
-  yard (~> 0.9)
+  rspec (~> 3.0)
+  rubocop (~> 1.0)
+  webmock (~> 3.0)
 
 RUBY VERSION
    ruby 3.2.9p265

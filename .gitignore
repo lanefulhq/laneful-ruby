@@ -66,3 +66,6 @@
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Files with real credentials (DO NOT COMMIT)
+examples/test_with_real_credentials.rb

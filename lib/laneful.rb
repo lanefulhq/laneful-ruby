@@ -23,5 +23,5 @@ module Laneful
   DEFAULT_TIMEOUT = 30
 
   # User agent string
-  USER_AGENT = 'laneful-ruby/1.0.0'
+  USER_AGENT = 'laneful-ruby/1.0.1'
 end

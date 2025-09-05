@@ -203,7 +203,7 @@ client = Laneful::Client.new(
 ```ruby
 # In your webhook handler
 payload = request.body.read
-signature = request.headers['X-Laneful-Signature']
+signature = request.headers['x-webhook-signature']
 secret = 'your-webhook-secret'
 
 if Laneful::WebhookVerifier.verify_signature(secret, payload, signature)
