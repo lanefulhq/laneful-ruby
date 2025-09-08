@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    laneful-ruby (1.0.1)
+    laneful-ruby (1.1.0)
       httparty (~> 0.21)
       json (~> 2.6)
 
