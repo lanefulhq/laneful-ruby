@@ -124,12 +124,13 @@ module Laneful
 
     # Creates an attachment from a hash representation
     def self.from_hash(data)
-      new(data['filename'], data['content_type'], data['content'])
+      filename = data['file_name'] || data['filename']  # Support both field names
+      new(filename, data['content_type'], data['content'])
     end
 
     def to_hash
       {
-        'filename' => filename,
+        'file_name' => filename,
         'content_type' => content_type,
         'content' => content
       }
