@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  laneful-ruby-examples:
+    build:
+      context: ..
+      dockerfile: examples/Dockerfile
+    environment:
+      - LANEFUL_BASE_URL=${LANEFUL_BASE_URL}
+      - LANEFUL_AUTH_TOKEN=${LANEFUL_AUTH_TOKEN}
+      - LANEFUL_FROM_EMAIL=${LANEFUL_FROM_EMAIL}
+      - LANEFUL_TO_EMAILS=${LANEFUL_TO_EMAILS}
+      - LANEFUL_TEMPLATE_ID=${LANEFUL_TEMPLATE_ID}
+      - LANEFUL_WEBHOOK_SECRET=${LANEFUL_WEBHOOK_SECRET}
+      - LANEFUL_WEBHOOK_URL=${LANEFUL_WEBHOOK_URL}
+    volumes:
+      - .:/app/examples
+    command: ["/app/run-example.sh", "BasicEmailExample"]
+
+  webhook-handler:
+    build:
+      context: ..
+      dockerfile: examples/Dockerfile
+    environment:
+      - LANEFUL_WEBHOOK_SECRET=${LANEFUL_WEBHOOK_SECRET}
+      - LANEFUL_WEBHOOK_URL=${LANEFUL_WEBHOOK_URL}
+    ports:
+      - "4567:4567"
+    command: ["ruby", "webhook_example.rb"]

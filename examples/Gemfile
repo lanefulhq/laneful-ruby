@@ -2,4 +2,9 @@
 
 source 'https://rubygems.org'
 
-gem 'laneful-ruby'
+# Use the local laneful-ruby gem
+gem 'laneful-ruby', path: '../'
+
+# Additional gems for examples
+gem 'sinatra', '~> 3.0'
+gem 'json', '~> 2.6'
