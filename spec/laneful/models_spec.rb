@@ -88,6 +88,18 @@ RSpec.describe Laneful::TrackingSettings do
       expect(tracking.clicks).to be true
       expect(tracking.unsubscribes).to be false
     end
+
+    it 'includes unsubscribe group fields' do
+      tracking = described_class.new(
+        opens: true,
+        clicks: true,
+        unsubscribes: false,
+        unsubscribe_group_id: 6,
+        unsubscribe_group_name: 'Newsletters'
+      )
+      expect(tracking.unsubscribe_group_id).to eq(6)
+      expect(tracking.unsubscribe_group_name).to eq('Newsletters')
+    end
   end
 
   describe '#to_hash' do
@@ -97,6 +109,16 @@ RSpec.describe Laneful::TrackingSettings do
                                        'opens' => true,
                                        'clicks' => false,
                                        'unsubscribes' => true
+                                     })
+    end
+
+    it 'omits nil unsubscribe group fields and keeps false booleans' do
+      tracking = described_class.new(opens: false, clicks: false, unsubscribes: false, unsubscribe_group_name: 'News')
+      expect(tracking.to_hash).to eq({
+                                       'opens' => false,
+                                       'clicks' => false,
+                                       'unsubscribes' => false,
+                                       'unsubscribe_group_name' => 'News'
                                      })
     end
   end
@@ -156,7 +178,7 @@ RSpec.describe Laneful::Attachment do
     it 'returns hash with attachment data' do
       attachment = described_class.new('test.txt', 'text/plain', 'dGVzdCBjb250ZW50')
       expect(attachment.to_hash).to eq({
-                                         'filename' => 'test.txt',
+                                         'file_name' => 'test.txt',
                                          'content_type' => 'text/plain',
                                          'content' => 'dGVzdCBjb250ZW50'
                                        })
@@ -241,6 +263,28 @@ RSpec.describe Laneful::Email do
       expect(hash).not_to have_key('html_content')
       expect(hash).not_to have_key('template_id')
       expect(hash).not_to have_key('attachments')
+      expect(hash).not_to have_key('from_header')
+    end
+
+    it 'includes from_header when set' do
+      email = Laneful::Email::Builder.new
+                                     .from(Laneful::Address.new('sender@example.com'))
+                                     .from_header(Laneful::Address.new('news@example.com', 'Newsletter'))
+                                     .to(Laneful::Address.new('recipient@example.com'))
+                                     .subject('Test Subject')
+                                     .text_content('Test content')
+                                     .build
+      expect(email.to_hash['from_header']).to eq({ 'email' => 'news@example.com', 'name' => 'Newsletter' })
+    end
+
+    it 'rejects webhook_data with more than 20 keys' do
+      builder = Laneful::Email::Builder.new
+                                       .from(Laneful::Address.new('sender@example.com'))
+                                       .to(Laneful::Address.new('recipient@example.com'))
+                                       .subject('Test Subject')
+                                       .text_content('Test content')
+                                       .webhook_data((1..21).to_h { |i| ["k#{i}", 'v'] })
+      expect { builder.build }.to raise_error(Laneful::ValidationException, /20 keys/)
     end
   end
 
@@ -262,5 +306,22 @@ RSpec.describe Laneful::Email do
 
       expect(email1).to eq(email2)
     end
+  end
+end
+
+RSpec.describe Laneful::MailSettings do
+  describe '#to_hash' do
+    it 'omits unset fields and sends false when set' do
+      expect(described_class.new.to_hash).to eq({})
+      expect(described_class.new(sandbox_mode: false).to_hash).to eq({ 'sandbox_mode' => false })
+    end
+  end
+end
+
+RSpec.describe Laneful::UpdateDomainRequest do
+  it 'encodes the email_track_id three-way' do
+    expect(described_class.new.to_hash).to eq({})
+    expect(described_class.new('').to_hash).to eq({ 'email_track_id' => '' })
+    expect(described_class.new('track-1').to_hash).to eq({ 'email_track_id' => 'track-1' })
   end
 end

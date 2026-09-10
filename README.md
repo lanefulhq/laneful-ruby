@@ -64,8 +64,12 @@ puts "Email sent successfully!"
 - File attachments
 - Email tracking (opens, clicks, unsubscribes)
 - Custom headers and reply-to addresses
+- Visible `from_header` and request-level `mail_settings`
 - Scheduled sending
 - Webhook signature verification
+- Domain management (list, create, verify, update email track, delete)
+- Unsubscribe groups
+- Deliverability analytics (spam-ratio radar, Google Postmaster, Microsoft SNDS)
 - Comprehensive error handling
 - Modern Ruby 3.0+ features
 
@@ -188,6 +192,29 @@ emails = [
 response = client.send_emails(emails)
 ```
 
+### Mail settings (sandbox and message IDs)
+
+```ruby
+response = client.send_email(
+  email,
+  Laneful::MailSettings.new(sandbox_mode: true, return_message_ids: true)
+)
+# response['message_ids'] is present when return_message_ids is true
+```
+
+### Tracking with an unsubscribe group
+
+```ruby
+tracking = Laneful::TrackingSettings.new(
+  opens: true,
+  clicks: true,
+  unsubscribes: true,
+  unsubscribe_group_id: 123,
+  # ignored if unsubscribe_group_id is set
+  unsubscribe_group_name: 'Newsletters'
+)
+```
+
 ### Custom Timeout
 
 ```ruby
@@ -196,6 +223,65 @@ client = Laneful::Client.new(
   'your-auth-token',
   timeout: 60  # 60 second timeout
 )
+```
+
+## Domain, unsubscribe groups, and analytics
+
+These endpoints live on the organization API host. Point the client at it
+(`https://api.laneful.net`, or `https://api.dev.laneful.net` in development):
+
+```ruby
+client = Laneful::Client.new(
+  'https://api.laneful.net',
+  'your-auth-token'
+)
+```
+
+### Unsubscribe groups
+
+```ruby
+groups = client.list_unsubscribe_groups(42, Laneful::ListUnsubscribeGroupsParams.new(limit: 50))
+created = client.create_unsubscribe_group(42, 'Newsletters')
+updated = client.update_unsubscribe_group(42, created.unsubscribe_group_id, 'Weekly Newsletters')
+```
+
+### Domains
+
+```ruby
+list = client.list_domains(42, Laneful::ListDomainsParams.new(limit: 50))
+domain = client.create_domain(42, Laneful::CreateDomainRequest.new(
+  domain: 'mydomain.com',
+  tracking: 'tracking',
+  return_path: 'return-path'
+))
+domain = client.get_domain(42, 'mydomain.com')
+domain = client.verify_domain(42, 'mydomain.com')
+
+# Set the email track; pass '' to clear it, or omit email_track_id to leave it unchanged
+domain = client.update_domain(42, 'mydomain.com', Laneful::UpdateDomainRequest.new(
+  'e59f0a35-05bc-4516-b585-c06f69c3e67e'
+))
+
+client.delete_domain(42, 'mydomain.com')
+```
+
+### Deliverability analytics
+
+```ruby
+radar = client.list_domain_spam_ratio_radar(
+  Laneful::ListDomainSpamRatioRadarParams.new(
+    workspace_ids: [1, 2],
+    domain: 'example.com',
+    start_date: '2026-09-01',
+    end_date: '2026-09-08'
+  )
+)
+
+postmaster = client.list_google_postmaster_spam_reports(
+  Laneful::ListGooglePostmasterSpamReportsParams.new(domain: 'example.com')
+)
+
+snds = client.list_snds_reports(Laneful::ListSndsReportsParams.new(ip: '203.0.113.5'))
 ```
 
 ## Webhook Verification
@@ -252,14 +338,18 @@ Laneful::Client.new(base_url, auth_token, timeout: 30)
 
 #### Methods
 
-- `send_email(email)` - Sends a single email
-- `send_emails(emails)` - Sends multiple emails
+- `send_email(email, mail_settings = nil)` - Sends a single email
+- `send_emails(emails, mail_settings = nil)` - Sends multiple emails
+- `list_unsubscribe_groups` / `create_unsubscribe_group` / `update_unsubscribe_group`
+- `list_domains` / `get_domain` / `create_domain` / `update_domain` / `verify_domain` / `delete_domain`
+- `list_domain_spam_ratio_radar` / `list_google_postmaster_spam_reports` / `list_snds_reports`
 
 ### Laneful::Email::Builder
 
 #### Required Fields
 
 - `from(address)` - Sender address
+- `from_header(address)` - Visible From header
 
 #### Optional Fields
 
@@ -301,7 +391,15 @@ Laneful::Attachment.new(filename, content_type, content)
 ### Laneful::TrackingSettings
 
 ```ruby
-Laneful::TrackingSettings.new(opens: false, clicks: false, unsubscribes: false)
+Laneful::TrackingSettings.new(
+  opens: false,
+  clicks: false,
+  unsubscribes: false,
+  unsubscribe_group_id: nil,
+  unsubscribe_group_name: nil
+)
+
+Laneful::MailSettings.new(sandbox_mode: true, return_message_ids: true)
 ```
 
 ### Laneful::WebhookVerifier

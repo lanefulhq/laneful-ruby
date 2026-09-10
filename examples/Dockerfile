@@ -70,6 +70,18 @@ RUN echo '#!/bin/bash' > /app/run-example.sh && \
     echo 'elif [ "$1" = "ErrorHandlingExample" ]; then' >> /app/run-example.sh && \
     echo '  echo "🚀 Running Error Handling Example..."' >> /app/run-example.sh && \
     echo '  ruby src/error_handling_example.rb' >> /app/run-example.sh && \
+    echo 'elif [ "$1" = "MailSettingsExample" ]; then' >> /app/run-example.sh && \
+    echo '  echo "🚀 Running Mail Settings Example..."' >> /app/run-example.sh && \
+    echo '  ruby src/mail_settings_example.rb' >> /app/run-example.sh && \
+    echo 'elif [ "$1" = "DomainsExample" ]; then' >> /app/run-example.sh && \
+    echo '  echo "🚀 Running Domains Example..."' >> /app/run-example.sh && \
+    echo '  ruby src/domains_example.rb' >> /app/run-example.sh && \
+    echo 'elif [ "$1" = "UnsubscribeGroupsExample" ]; then' >> /app/run-example.sh && \
+    echo '  echo "🚀 Running Unsubscribe Groups Example..."' >> /app/run-example.sh && \
+    echo '  ruby src/unsubscribe_groups_example.rb' >> /app/run-example.sh && \
+    echo 'elif [ "$1" = "AnalyticsExample" ]; then' >> /app/run-example.sh && \
+    echo '  echo "🚀 Running Analytics Example..."' >> /app/run-example.sh && \
+    echo '  ruby src/analytics_example.rb' >> /app/run-example.sh && \
     echo 'elif [ "$1" = "ComprehensiveExample" ]; then' >> /app/run-example.sh && \
     echo '  echo "🚀 Running Comprehensive Example..."' >> /app/run-example.sh && \
     echo '  ruby src/comprehensive_example.rb' >> /app/run-example.sh && \
@@ -84,6 +96,10 @@ RUN echo '#!/bin/bash' > /app/run-example.sh && \
     echo '  echo "  BatchEmailExample"' >> /app/run-example.sh && \
     echo '  echo "  WebhookHandlerExample"' >> /app/run-example.sh && \
     echo '  echo "  ErrorHandlingExample"' >> /app/run-example.sh && \
+    echo '  echo "  MailSettingsExample"' >> /app/run-example.sh && \
+    echo '  echo "  DomainsExample"' >> /app/run-example.sh && \
+    echo '  echo "  UnsubscribeGroupsExample"' >> /app/run-example.sh && \
+    echo '  echo "  AnalyticsExample"' >> /app/run-example.sh && \
     echo '  echo "  ComprehensiveExample"' >> /app/run-example.sh && \
     echo 'fi' >> /app/run-example.sh && \
     chmod +x /app/run-example.sh

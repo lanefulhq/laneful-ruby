@@ -12,7 +12,7 @@ module Laneful
 
     # Valid event types as documented
     VALID_EVENT_TYPES = %w[
-      delivery open click drop spam_complaint unsubscribe bounce
+      request delivery open click drop spam_complaint unsubscribe bounce
     ].freeze
 
     # UUID pattern for lane_id validation

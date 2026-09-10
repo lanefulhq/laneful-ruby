@@ -70,6 +70,10 @@ show_examples() {
     echo "  BatchEmailExample"
     echo "  WebhookHandlerExample"
     echo "  ErrorHandlingExample"
+    echo "  MailSettingsExample"
+    echo "  DomainsExample"
+    echo "  UnsubscribeGroupsExample"
+    echo "  AnalyticsExample"
     echo "  ComprehensiveExample"
 }
 

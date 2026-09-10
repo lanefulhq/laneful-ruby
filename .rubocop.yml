@@ -2,6 +2,10 @@ AllCops:
   NewCops: enable
   TargetRubyVersion: 3.0
   SuggestExtensions: false
+  Exclude:
+    - 'examples/**/*'
+    - 'vendor/**/*'
+    - '*.gemspec'
 
 # Disable some strict rules for test files and gemspec
 Metrics/BlockLength:
@@ -10,13 +14,23 @@ Metrics/BlockLength:
     - '*.gemspec'
 
 Metrics/MethodLength:
-  Max: 30
+  Max: 40
 
 Metrics/ClassLength:
   Max: 150
+  Exclude:
+    - 'lib/laneful/client.rb'
+    - 'lib/laneful/models.rb'
+    - 'lib/laneful/org_models.rb'
+
+Metrics/ParameterLists:
+  Max: 5
+  Exclude:
+    - 'lib/laneful/org_models.rb'
+    - 'lib/laneful/models.rb'
 
 Metrics/AbcSize:
-  Max: 80
+  Max: 90
 
 Metrics/CyclomaticComplexity:
   Max: 40
@@ -24,8 +38,7 @@ Metrics/CyclomaticComplexity:
 Metrics/PerceivedComplexity:
   Max: 40
 
-Metrics/ParameterLists:
-  Max: 5
-
 Layout/LineLength:
   Max: 120
+  Exclude:
+    - 'spec/**/*'

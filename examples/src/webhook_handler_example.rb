@@ -101,6 +101,8 @@ begin
       puts "🚫 Spam complaint for #{email}"
     when 'unsubscribe'
       puts "🚪 Unsubscribe event for #{email}"
+    when 'request'
+      puts "📨 Send request accepted for: #{email}"
     else
       puts "❓ Unknown event type: #{event_type}"
     end
