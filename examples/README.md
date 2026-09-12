@@ -39,6 +39,10 @@ docker run --rm --env-file .env laneful-ruby-examples:latest BasicEmailExample
 | **BatchEmailExample** | Send multiple emails in batch | `docker run --rm --env-file .env laneful-ruby-examples:latest BatchEmailExample` |
 | **WebhookHandlerExample** | Demonstrate webhook handling | `docker run --rm --env-file .env laneful-ruby-examples:latest WebhookHandlerExample` |
 | **ErrorHandlingExample** | Demonstrate error handling | `docker run --rm --env-file .env laneful-ruby-examples:latest ErrorHandlingExample` |
+| **MailSettingsExample** | Sandbox send with `from_header` | `docker run --rm --env-file .env laneful-ruby-examples:latest MailSettingsExample` |
+| **DomainsExample** | List, create, verify, and update domains | `docker run --rm --env-file .env laneful-ruby-examples:latest DomainsExample` |
+| **UnsubscribeGroupsExample** | Create, update, and list unsubscribe groups | `docker run --rm --env-file .env laneful-ruby-examples:latest UnsubscribeGroupsExample` |
+| **AnalyticsExample** | Spam-ratio radar, Postmaster, and SNDS | `docker run --rm --env-file .env laneful-ruby-examples:latest AnalyticsExample` |
 | **ComprehensiveExample** | Run all examples together | `docker run --rm --env-file .env laneful-ruby-examples:latest ComprehensiveExample` |
 
 ## Local Development Setup
@@ -95,6 +99,8 @@ ruby src/comprehensive_example.rb
 | `LANEFUL_TEMPLATE_ID` | Template ID for template examples | `welcome-template` |
 | `LANEFUL_WEBHOOK_SECRET` | Webhook secret for webhook examples | `your-webhook-secret` |
 | `LANEFUL_WEBHOOK_URL` | Webhook URL for webhook examples | `https://your-domain.com/webhook` |
+| `LANEFUL_ORG_BASE_URL` | Organization API host | `https://api.laneful.net` |
+| `LANEFUL_WORKSPACE_ID` | Workspace ID for org API examples | `1` |
 
 ## Example Features
 

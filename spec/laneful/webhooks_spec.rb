@@ -112,7 +112,7 @@ RSpec.describe Laneful::WebhookVerifier do
     end
 
     it 'validates all documented event types' do
-      %w[delivery open click drop spam_complaint unsubscribe bounce].each do |event_type|
+      %w[request delivery open click drop spam_complaint unsubscribe bounce].each do |event_type|
         payload = "{\"event\":\"#{event_type}\",\"email\":\"user@example.com\",\"lane_id\":\"5805dd85-ed8c-44db-91a7-1d53a41c86a5\",\"message_id\":\"H-1-019844e340027d728a7cfda632e14d0a\",\"timestamp\":1753502407}"
 
         result = described_class.parse_webhook_payload(payload)

@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-09-10
+
+### Added
+- `from_header` on emails and request-level `MailSettings` (`sandbox_mode`, `return_message_ids`)
+- `unsubscribe_group_id` and `unsubscribe_group_name` on tracking settings
+- Organization APIs on the same client: unsubscribe groups, domains, and deliverability analytics
+- Webhook event type `request`
+- Optional attachment `inline_id`
+- Examples for mail settings, domains, unsubscribe groups, and analytics
+
+### Changed
+- User-Agent is now `laneful-ruby/1.2.0` (derived from `Laneful::VERSION`)
+- `webhook_data` is limited to 20 keys
+- HTTP requests are instance-scoped so send and org clients can be used together
+
 ## [1.1.0] - 2024-12-19
 
 ### Added

@@ -59,12 +59,15 @@ module Laneful
 
   # Configuration for email tracking settings
   class TrackingSettings
-    attr_reader :opens, :clicks, :unsubscribes
+    attr_reader :opens, :clicks, :unsubscribes, :unsubscribe_group_id, :unsubscribe_group_name
 
-    def initialize(opens: false, clicks: false, unsubscribes: false)
+    def initialize(opens: false, clicks: false, unsubscribes: false,
+                   unsubscribe_group_id: nil, unsubscribe_group_name: nil)
       @opens = opens
       @clicks = clicks
       @unsubscribes = unsubscribes
+      @unsubscribe_group_id = unsubscribe_group_id
+      @unsubscribe_group_name = unsubscribe_group_name
     end
 
     # Creates tracking settings from a hash representation
@@ -72,22 +75,31 @@ module Laneful
       new(
         opens: data['opens'] || false,
         clicks: data['clicks'] || false,
-        unsubscribes: data['unsubscribes'] || false
+        unsubscribes: data['unsubscribes'] || false,
+        unsubscribe_group_id: data['unsubscribe_group_id'],
+        unsubscribe_group_name: data['unsubscribe_group_name']
       )
     end
 
     def to_hash
-      {
+      hash = {
         'opens' => opens,
         'clicks' => clicks,
         'unsubscribes' => unsubscribes
       }
+      hash['unsubscribe_group_id'] = unsubscribe_group_id unless unsubscribe_group_id.nil?
+      hash['unsubscribe_group_name'] = unsubscribe_group_name unless unsubscribe_group_name.nil?
+      hash
     end
 
     def ==(other)
       return false unless other.is_a?(TrackingSettings)
 
-      opens == other.opens && clicks == other.clicks && unsubscribes == other.unsubscribes
+      opens == other.opens &&
+        clicks == other.clicks &&
+        unsubscribes == other.unsubscribes &&
+        unsubscribe_group_id == other.unsubscribe_group_id &&
+        unsubscribe_group_name == other.unsubscribe_group_name
     end
 
     def eql?(other)
@@ -95,7 +107,7 @@ module Laneful
     end
 
     def hash
-      [opens, clicks, unsubscribes].hash
+      [opens, clicks, unsubscribes, unsubscribe_group_id, unsubscribe_group_name].hash
     end
 
     def to_s
@@ -103,14 +115,53 @@ module Laneful
     end
   end
 
+  # Request-level mail settings (sandbox mode, return message IDs)
+  class MailSettings
+    attr_reader :sandbox_mode, :return_message_ids
+
+    def initialize(sandbox_mode: nil, return_message_ids: nil)
+      @sandbox_mode = sandbox_mode
+      @return_message_ids = return_message_ids
+    end
+
+    def self.from_hash(data)
+      new(
+        sandbox_mode: data['sandbox_mode'],
+        return_message_ids: data['return_message_ids']
+      )
+    end
+
+    def to_hash
+      hash = {}
+      hash['sandbox_mode'] = sandbox_mode unless sandbox_mode.nil?
+      hash['return_message_ids'] = return_message_ids unless return_message_ids.nil?
+      hash
+    end
+
+    def ==(other)
+      return false unless other.is_a?(MailSettings)
+
+      sandbox_mode == other.sandbox_mode && return_message_ids == other.return_message_ids
+    end
+
+    def eql?(other)
+      self == other
+    end
+
+    def hash
+      [sandbox_mode, return_message_ids].hash
+    end
+  end
+
   # Represents a file attachment for an email
   class Attachment
-    attr_reader :filename, :content_type, :content
+    attr_reader :filename, :content_type, :content, :inline_id
 
-    def initialize(filename, content_type, content)
+    def initialize(filename, content_type, content, inline_id = nil)
       @filename = filename
       @content_type = content_type
       @content = content
+      @inline_id = inline_id
       validate!
     end
 
@@ -124,22 +175,27 @@ module Laneful
 
     # Creates an attachment from a hash representation
     def self.from_hash(data)
-      filename = data['file_name'] || data['filename']  # Support both field names
-      new(filename, data['content_type'], data['content'])
+      filename = data['file_name'] || data['filename']
+      new(filename, data['content_type'], data['content'], data['inline_id'])
     end
 
     def to_hash
-      {
+      hash = {
         'file_name' => filename,
         'content_type' => content_type,
         'content' => content
       }
+      hash['inline_id'] = inline_id if inline_id && !inline_id.empty?
+      hash
     end
 
     def ==(other)
       return false unless other.is_a?(Attachment)
 
-      filename == other.filename && content_type == other.content_type && content == other.content
+      filename == other.filename &&
+        content_type == other.content_type &&
+        content == other.content &&
+        inline_id == other.inline_id
     end
 
     def eql?(other)
@@ -147,7 +203,7 @@ module Laneful
     end
 
     def hash
-      [filename, content_type, content].hash
+      [filename, content_type, content, inline_id].hash
     end
 
     def to_s
@@ -193,12 +249,13 @@ module Laneful
 
   # Represents a single email to be sent
   class Email
-    attr_reader :from, :to, :cc, :bcc, :subject, :text_content, :html_content,
+    attr_reader :from, :from_header, :to, :cc, :bcc, :subject, :text_content, :html_content,
                 :template_id, :template_data, :attachments, :headers, :reply_to,
                 :send_time, :webhook_data, :tag, :tracking
 
     def initialize(builder)
       @from = builder.instance_variable_get(:@from)
+      @from_header = builder.instance_variable_get(:@from_header)
       @to = builder.instance_variable_get(:@to).dup.freeze
       @cc = builder.instance_variable_get(:@cc).dup.freeze
       @bcc = builder.instance_variable_get(:@bcc).dup.freeze
@@ -222,6 +279,7 @@ module Laneful
       builder = Builder.new
 
       builder.from(Address.from_hash(data['from'])) if data && data['from']
+      builder.from_header(Address.from_hash(data['from_header'])) if data && data['from_header']
 
       data['to'].each { |to_data| builder.to(Address.from_hash(to_data)) } if data && data['to']
 
@@ -253,6 +311,7 @@ module Laneful
 
       # Required fields
       hash['from'] = from.to_hash
+      hash['from_header'] = from_header.to_hash if from_header
       hash['to'] = to.map(&:to_hash)
       hash['subject'] = subject if subject
 
@@ -278,6 +337,7 @@ module Laneful
       return false unless other.is_a?(Email)
 
       from == other.from &&
+        from_header == other.from_header &&
         to == other.to &&
         cc == other.cc &&
         bcc == other.bcc &&
@@ -300,7 +360,7 @@ module Laneful
     end
 
     def hash
-      [from, to, cc, bcc, subject, text_content, html_content, template_id,
+      [from, from_header, to, cc, bcc, subject, text_content, html_content, template_id,
        template_data, attachments, headers, reply_to, send_time, webhook_data, tag, tracking].hash
     end
 
@@ -340,6 +400,15 @@ module Laneful
         raise ValidationException, 'Email must have either content (text/HTML) or a template ID'
       end
 
+      if webhook_data
+        raise ValidationException, 'Webhook data cannot have more than 20 keys' if webhook_data.size > 20
+
+        webhook_data.each do |key, value|
+          raise ValidationException, 'Webhook data keys cannot exceed 50 characters' if key.to_s.length > 50
+          raise ValidationException, 'Webhook data values cannot exceed 100 characters' if value.to_s.length > 100
+        end
+      end
+
       # Validate send time
       return unless send_time && send_time <= Time.now.to_i
 
@@ -357,6 +426,11 @@ module Laneful
 
       def from(address)
         @from = address
+        self
+      end
+
+      def from_header(address)
+        @from_header = address
         self
       end
 

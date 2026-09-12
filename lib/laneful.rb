@@ -8,6 +8,7 @@ require 'base64'
 require_relative 'laneful/version'
 require_relative 'laneful/exceptions'
 require_relative 'laneful/models'
+require_relative 'laneful/org_models'
 require_relative 'laneful/client'
 require_relative 'laneful/webhooks'
 
@@ -23,5 +24,5 @@ module Laneful
   DEFAULT_TIMEOUT = 30
 
   # User agent string
-  USER_AGENT = 'laneful-ruby/1.0.1'
+  USER_AGENT = "laneful-ruby/#{VERSION}".freeze
 end
