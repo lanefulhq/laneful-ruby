@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-10-14
+
+### Added
+- `MailSettings` `idempotency_key` for duplicate send protection (1 to 36 bytes)
+- `examples/src/webhook_receiver_example.rb`, a runnable HTTP webhook receiver
+
+### Fixed
+- `parse_webhook_payload` rejected every real `request` event, because it required `lane_id` to be a UUID and `request` events have an empty `lane_id`; any `lane_id` is now accepted
+- `parse_webhook_payload` rejected the whole payload when it contained an unknown event type; such events are now kept
+
 ## [1.2.0] - 2026-09-10
 
 ### Added
