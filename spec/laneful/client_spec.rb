@@ -172,6 +172,21 @@ RSpec.describe Laneful::Client do
         expect(response).to eq({ 'status' => 'accepted', 'message_ids' => ['msg-1'] })
       end
     end
+
+    context 'with an idempotency key' do
+      let(:email) { emails.first }
+
+      before do
+        stub_request(:post, "#{base_url}/v1/email/send")
+          .with(body: hash_including('mail_settings' => { 'idempotency_key' => 'order-1234' }))
+          .to_return(status: 200, body: '{"status":"accepted"}')
+      end
+
+      it 'sends the key in mail_settings' do
+        response = client.send_email(email, Laneful::MailSettings.new(idempotency_key: 'order-1234'))
+        expect(response).to eq({ 'status' => 'accepted' })
+      end
+    end
   end
 
   describe 'organization APIs' do

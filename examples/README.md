@@ -79,6 +79,9 @@ ruby src/basic_email_example.rb
 
 # Or run all examples
 ruby src/comprehensive_example.rb
+
+# Webhook receiver (HTTP server on PORT, default 8000)
+LANEFUL_WEBHOOK_SECRET=your-webhook-secret bundle exec ruby src/webhook_receiver_example.rb
 ```
 
 ## Environment Variables

@@ -203,6 +203,19 @@ response = client.send_email(
 # response['message_ids'] is present when return_message_ids is true
 ```
 
+### Duplicate send protection
+
+Pass an `idempotency_key` (1 to 36 bytes) and reuse it when you retry a send, for example after a timeout. The client does not retry on its own.
+
+```ruby
+response = client.send_email(
+  email,
+  Laneful::MailSettings.new(idempotency_key: "order-#{order_id}")
+)
+```
+
+Laneful remembers a key per organization for one hour. A repeated request with the same key gets status `accepted` with no message IDs and sends nothing, even if the emails differ, so use a new key for every distinct send. Detection is best effort. A request that fails with HTTP 500 doesn't keep its key, so a retry with it is processed as a new request: before resending after a 500, check your webhook events (a `request` event means Laneful accepted the email). Sandbox mode requests are not deduplicated. A key outside 1 to 36 bytes raises `Laneful::ValidationException`.
+
 ### Tracking with an unsubscribe group
 
 ```ruby
@@ -294,14 +307,20 @@ signature = request.headers['x-webhook-signature']
 secret = 'your-webhook-secret'
 
 if Laneful::WebhookVerifier.verify_signature(secret, payload, signature)
-  # Process webhook data
-  data = JSON.parse(payload)
-  # Handle webhook event
+  # A single event or a batch (JSON array)
+  webhook_data = Laneful::WebhookVerifier.parse_webhook_payload(payload)
+  webhook_data[:events].each do |event|
+    # Handle each event, e.g. by event['event']
+  end
 else
   # Invalid signature
   head :unauthorized
 end
 ```
+
+Each parsed event contains every field Laneful sends. Every event has `id`, `event`, `email`, `message_id`, `lane_id`, `tag`, `timestamp` and `metadata` (the `webhook_data` sent with the email); `lane_id` is empty on `request` events. Event-specific fields such as `url`, `client_ip`, `is_machine`, `code`, `is_hard`, `classification`, `reason` and `mx_host` are included too. `id` is unique per event and stays the same when Laneful delivers the event again on retry or in a batch, so use it to skip events you have already processed. Events of types the SDK doesn't list are kept rather than rejecting the payload, so skip the ones you don't handle.
+
+See [`examples/src/webhook_receiver_example.rb`](examples/src/webhook_receiver_example.rb) for a runnable HTTP receiver.
 
 ## Error Handling
 
@@ -401,12 +420,14 @@ Laneful::TrackingSettings.new(
 )
 
 Laneful::MailSettings.new(sandbox_mode: true, return_message_ids: true)
+Laneful::MailSettings.new(idempotency_key: 'order-1234') # 1 to 36 bytes
 ```
 
 ### Laneful::WebhookVerifier
 
 ```ruby
 Laneful::WebhookVerifier.verify_signature(secret, payload, signature)
+Laneful::WebhookVerifier.parse_webhook_payload(payload) # => { is_batch:, events: [event hashes with every field] }
 ```
 
 ## Exception Types
