@@ -111,6 +111,7 @@ response = client.send_email(email)
 email = Laneful::Email::Builder.new
   .from(Laneful::Address.new('sender@example.com'))
   .to(Laneful::Address.new('user@example.com'))
+  .subject('Welcome!') # Required, also for template emails
   .template_id('welcome-template')
   .template_data({
     'name' => 'John Doe',
@@ -228,7 +229,7 @@ client = Laneful::Client.new(
 ## Domain, unsubscribe groups, and analytics
 
 These endpoints live on the organization API host. Point the client at it
-(`https://api.laneful.net`, or `https://api.dev.laneful.net` in development):
+(`https://api.laneful.net`):
 
 ```ruby
 client = Laneful::Client.new(
@@ -349,14 +350,14 @@ Laneful::Client.new(base_url, auth_token, timeout: 30)
 #### Required Fields
 
 - `from(address)` - Sender address
-- `from_header(address)` - Visible From header
+- `subject(subject)` - Email subject (also required for template emails)
 
 #### Optional Fields
 
+- `from_header(address)` - Visible From header
 - `to(address)` - Recipient addresses
 - `cc(address)` - CC addresses
 - `bcc(address)` - BCC addresses
-- `subject(subject)` - Email subject
 - `text_content(content)` - Plain text content
 - `html_content(content)` - HTML content
 - `template_id(id)` - Template ID

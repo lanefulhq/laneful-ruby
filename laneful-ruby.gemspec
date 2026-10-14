@@ -11,14 +11,14 @@ Gem::Specification.new do |spec|
   spec.summary       = 'Ruby SDK for the Laneful email API'
   spec.description   = 'A modern Ruby client library for the Laneful email API, ' \
                        'providing easy integration for email sending, webhooks, and analytics.'
-  spec.homepage      = 'https://github.com/laneful/laneful-ruby'
+  spec.homepage      = 'https://github.com/lanefulhq/laneful-ruby'
   spec.license       = 'MIT'
   spec.required_ruby_version = '>= 3.0.0'
 
   spec.metadata['homepage_uri'] = spec.homepage
-  spec.metadata['source_code_uri'] = 'https://github.com/laneful/laneful-ruby'
-  spec.metadata['changelog_uri'] = 'https://github.com/laneful/laneful-ruby/blob/main/CHANGELOG.md'
-  spec.metadata['documentation_uri'] = 'https://docs.laneful.com/ruby'
+  spec.metadata['source_code_uri'] = 'https://github.com/lanefulhq/laneful-ruby'
+  spec.metadata['changelog_uri'] = 'https://github.com/lanefulhq/laneful-ruby/blob/main/CHANGELOG.md'
+  spec.metadata['documentation_uri'] = 'https://laneful.com/docs/ruby-sdk/'
   spec.metadata['rubygems_mfa_required'] = 'true'
 
   # Specify which files should be added to the gem when it is released.
