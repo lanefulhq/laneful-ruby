@@ -307,14 +307,18 @@ signature = request.headers['x-webhook-signature']
 secret = 'your-webhook-secret'
 
 if Laneful::WebhookVerifier.verify_signature(secret, payload, signature)
-  # Process webhook data
-  data = JSON.parse(payload)
-  # Handle webhook event
+  # A single event or a batch (JSON array)
+  webhook_data = Laneful::WebhookVerifier.parse_webhook_payload(payload)
+  webhook_data[:events].each do |event|
+    # Handle each event, e.g. by event['event']
+  end
 else
   # Invalid signature
   head :unauthorized
 end
 ```
+
+Each parsed event contains every field Laneful sends. Every event has `id`, `event`, `email`, `message_id`, `lane_id`, `tag`, `timestamp` and `metadata` (the `webhook_data` sent with the email); `lane_id` is empty on `request` events. Event-specific fields such as `url`, `client_ip`, `is_machine`, `code`, `is_hard`, `classification`, `reason` and `mx_host` are included too. `id` is unique per event and stays the same when Laneful delivers the event again on retry or in a batch, so use it to skip events you have already processed. Events of types the SDK doesn't list are kept rather than rejecting the payload, so skip the ones you don't handle.
 
 ## Error Handling
 
@@ -421,6 +425,7 @@ Laneful::MailSettings.new(idempotency_key: 'order-1234') # 1 to 36 bytes
 
 ```ruby
 Laneful::WebhookVerifier.verify_signature(secret, payload, signature)
+Laneful::WebhookVerifier.parse_webhook_payload(payload) # => { is_batch:, events: [event hashes with every field] }
 ```
 
 ## Exception Types

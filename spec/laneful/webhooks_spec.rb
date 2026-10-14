@@ -136,12 +136,31 @@ RSpec.describe Laneful::WebhookVerifier do
       end.to raise_error(ArgumentError, /Missing required field: email/)
     end
 
-    it 'raises error for invalid event type' do
-      payload = '{"event":"invalid_event_type","email":"user@example.com","lane_id":"5805dd85-ed8c-44db-91a7-1d53a41c86a5","message_id":"H-1-019844e340027d728a7cfda632e14d0a","timestamp":1753502407}'
+    it 'keeps events of unknown types' do
+      payload = '{"event":"future_event_type","email":"user@example.com","lane_id":"5805dd85-ed8c-44db-91a7-1d53a41c86a5","message_id":"H-1-019844e340027d728a7cfda632e14d0a","timestamp":1753502407}'
 
-      expect do
-        described_class.parse_webhook_payload(payload)
-      end.to raise_error(ArgumentError, /Invalid event type: invalid_event_type/)
+      result = described_class.parse_webhook_payload(payload)
+      expect(result[:events].first['event']).to eq('future_event_type')
+    end
+
+    it 'keeps every event of a batch that contains an unknown type' do
+      payload = '[{"event":"delivery","email":"user@example.com","lane_id":"","message_id":"H-1-a","timestamp":1753502407},' \
+                '{"event":"future_event_type","email":"user@example.com","lane_id":"","message_id":"H-1-b","timestamp":1753502408}]'
+
+      result = described_class.parse_webhook_payload(payload)
+      expect(result[:events].map { |e| e['event'] }).to eq(%w[delivery future_event_type])
+    end
+
+    it 'parses a real request event with an empty lane_id and keeps every field' do
+      payload = '{"id":"01a136a7f4f77430913f16d9d3e195a8","event":"request","email":"user@example.com",' \
+                '"message_id":"H-0-01a136a7f4ef7bc2ac33bc34d2377fab-21183","lane_id":"","tag":"",' \
+                '"timestamp":1791918339,"mx_host":"aspmx.l.google.com","metadata":{"run_id":"r1"}}'
+
+      event = described_class.parse_webhook_payload(payload)[:events].first
+      expect(event['id']).to eq('01a136a7f4f77430913f16d9d3e195a8')
+      expect(event['lane_id']).to eq('')
+      expect(event['mx_host']).to eq('aspmx.l.google.com')
+      expect(event['metadata']).to eq({ 'run_id' => 'r1' })
     end
 
     it 'raises error for invalid email format' do
@@ -152,12 +171,11 @@ RSpec.describe Laneful::WebhookVerifier do
       end.to raise_error(ArgumentError, /Invalid email format/)
     end
 
-    it 'raises error for invalid lane_id format' do
+    it 'accepts any lane_id' do
       payload = '{"event":"delivery","email":"user@example.com","lane_id":"not-a-uuid","message_id":"H-1-019844e340027d728a7cfda632e14d0a","timestamp":1753502407}'
 
-      expect do
-        described_class.parse_webhook_payload(payload)
-      end.to raise_error(ArgumentError, /Invalid lane_id format/)
+      result = described_class.parse_webhook_payload(payload)
+      expect(result[:events].first['lane_id']).to eq('not-a-uuid')
     end
 
     it 'raises error for invalid timestamp format' do

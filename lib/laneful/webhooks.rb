@@ -10,13 +10,11 @@ module Laneful
     SIGNATURE_PREFIX = 'sha256='
     SIGNATURE_HEADER_NAME = 'x-webhook-signature'
 
-    # Valid event types as documented
+    # Documented event types. Informational: parse_webhook_payload keeps events of other
+    # types, so new event types don't make the whole payload fail.
     VALID_EVENT_TYPES = %w[
       request delivery open click drop spam_complaint unsubscribe bounce
     ].freeze
-
-    # UUID pattern for lane_id validation
-    UUID_PATTERN = /\A[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\z/i
 
     # Verifies a webhook signature with support for sha256= prefix
     # @param secret [String] The webhook secret
@@ -133,9 +131,7 @@ module Laneful
         raise ArgumentError, "Missing required field: #{field}" unless event.key?(field)
       end
 
-      # Validate event type
-      event_type = event['event']
-      raise ArgumentError, "Invalid event type: #{event_type}" unless VALID_EVENT_TYPES.include?(event_type)
+      raise ArgumentError, 'Missing required field: event' if event['event'].to_s.empty?
 
       # Validate email format
       email = event['email']
@@ -149,9 +145,7 @@ module Laneful
         raise ArgumentError, 'Invalid timestamp format'
       end
 
-      # Validate lane_id is a valid UUID format
-      lane_id = event['lane_id']
-      raise ArgumentError, "Invalid lane_id format: #{lane_id}" unless UUID_PATTERN.match?(lane_id)
+      # lane_id isn't checked: request events have an empty lane_id.
 
       # Return event with all fields (required + optional)
       event
