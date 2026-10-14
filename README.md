@@ -203,6 +203,19 @@ response = client.send_email(
 # response['message_ids'] is present when return_message_ids is true
 ```
 
+### Duplicate send protection
+
+Pass an `idempotency_key` (1 to 36 bytes) and reuse it when you retry a send, for example after a timeout. The client does not retry on its own.
+
+```ruby
+response = client.send_email(
+  email,
+  Laneful::MailSettings.new(idempotency_key: "order-#{order_id}")
+)
+```
+
+Laneful remembers a key per organization for one hour. A repeated request with the same key gets status `accepted` with no message IDs and sends nothing, even if the emails differ, so use a new key for every distinct send. If a request fails, the key is released and a retry with the same key is processed normally. Sandbox mode requests are not deduplicated. A key outside 1 to 36 bytes raises `Laneful::ValidationException`.
+
 ### Tracking with an unsubscribe group
 
 ```ruby
@@ -401,6 +414,7 @@ Laneful::TrackingSettings.new(
 )
 
 Laneful::MailSettings.new(sandbox_mode: true, return_message_ids: true)
+Laneful::MailSettings.new(idempotency_key: 'order-1234') # 1 to 36 bytes
 ```
 
 ### Laneful::WebhookVerifier

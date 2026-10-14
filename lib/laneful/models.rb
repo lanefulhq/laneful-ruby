@@ -115,19 +115,26 @@ module Laneful
     end
   end
 
-  # Request-level mail settings (sandbox mode, return message IDs)
+  # Request-level mail settings (sandbox mode, return message IDs, idempotency key).
+  #
+  # idempotency_key protects against duplicate sends: Laneful accepts a key once per
+  # organization for one hour. A repeated request with the same key is answered with
+  # status "accepted" (and no message IDs) and sends nothing. Keys are 1 to 36 bytes.
   class MailSettings
-    attr_reader :sandbox_mode, :return_message_ids
+    attr_reader :sandbox_mode, :return_message_ids, :idempotency_key
 
-    def initialize(sandbox_mode: nil, return_message_ids: nil)
+    def initialize(sandbox_mode: nil, return_message_ids: nil, idempotency_key: nil)
       @sandbox_mode = sandbox_mode
       @return_message_ids = return_message_ids
+      @idempotency_key = idempotency_key
+      validate_idempotency_key!
     end
 
     def self.from_hash(data)
       new(
         sandbox_mode: data['sandbox_mode'],
-        return_message_ids: data['return_message_ids']
+        return_message_ids: data['return_message_ids'],
+        idempotency_key: data['idempotency_key']
       )
     end
 
@@ -135,13 +142,15 @@ module Laneful
       hash = {}
       hash['sandbox_mode'] = sandbox_mode unless sandbox_mode.nil?
       hash['return_message_ids'] = return_message_ids unless return_message_ids.nil?
+      hash['idempotency_key'] = idempotency_key unless idempotency_key.nil?
       hash
     end
 
     def ==(other)
       return false unless other.is_a?(MailSettings)
 
-      sandbox_mode == other.sandbox_mode && return_message_ids == other.return_message_ids
+      sandbox_mode == other.sandbox_mode && return_message_ids == other.return_message_ids &&
+        idempotency_key == other.idempotency_key
     end
 
     def eql?(other)
@@ -149,7 +158,16 @@ module Laneful
     end
 
     def hash
-      [sandbox_mode, return_message_ids].hash
+      [sandbox_mode, return_message_ids, idempotency_key].hash
+    end
+
+    private
+
+    def validate_idempotency_key!
+      return if idempotency_key.nil?
+      return if idempotency_key.bytesize.between?(1, 36)
+
+      raise ValidationException, 'idempotency_key must contain between 1 and 36 bytes'
     end
   end
 

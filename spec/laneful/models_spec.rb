@@ -315,6 +315,23 @@ RSpec.describe Laneful::MailSettings do
       expect(described_class.new.to_hash).to eq({})
       expect(described_class.new(sandbox_mode: false).to_hash).to eq({ 'sandbox_mode' => false })
     end
+
+    it 'includes idempotency_key when set' do
+      expect(described_class.new(idempotency_key: 'order-1234').to_hash).to eq({ 'idempotency_key' => 'order-1234' })
+    end
+  end
+
+  describe 'idempotency_key validation' do
+    it 'accepts 1 to 36 bytes' do
+      expect { described_class.new(idempotency_key: 'k' * 36) }.not_to raise_error
+    end
+
+    it 'rejects empty keys and keys over 36 bytes' do
+      ['', 'k' * 37, 'é' * 19].each do |key|
+        expect { described_class.new(idempotency_key: key) }
+          .to raise_error(Laneful::ValidationException, /between 1 and 36 bytes/)
+      end
+    end
   end
 end
 
