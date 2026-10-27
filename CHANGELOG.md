@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2026-10-26
+
+### Fixed
+- `webhook_data` key (50) and value (100) limits are now counted in UTF-8 bytes, as the send API counts them; non-ASCII data that passed the old character count got a 400 from the API
+
 ## [1.3.0] - 2026-10-14
 
 ### Added

@@ -421,9 +421,10 @@ module Laneful
       if webhook_data
         raise ValidationException, 'Webhook data cannot have more than 20 keys' if webhook_data.size > 20
 
+        # The send API counts UTF-8 bytes, so "é" counts as 2.
         webhook_data.each do |key, value|
-          raise ValidationException, 'Webhook data keys cannot exceed 50 characters' if key.to_s.length > 50
-          raise ValidationException, 'Webhook data values cannot exceed 100 characters' if value.to_s.length > 100
+          raise ValidationException, 'Webhook data keys cannot exceed 50 bytes (UTF-8)' if key.to_s.bytesize > 50
+          raise ValidationException, 'Webhook data values cannot exceed 100 bytes (UTF-8)' if value.to_s.bytesize > 100
         end
       end
 
