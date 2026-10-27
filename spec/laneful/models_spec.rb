@@ -286,6 +286,23 @@ RSpec.describe Laneful::Email do
                                        .webhook_data((1..21).to_h { |i| ["k#{i}", 'v'] })
       expect { builder.build }.to raise_error(Laneful::ValidationException, /20 keys/)
     end
+
+    # "é" is 2 bytes in UTF-8: 25 fill a 50-byte key and 50 fill a 100-byte value.
+    it 'counts webhook_data lengths in UTF-8 bytes' do
+      build = lambda do |data|
+        Laneful::Email::Builder.new
+                               .from(Laneful::Address.new('sender@example.com'))
+                               .to(Laneful::Address.new('recipient@example.com'))
+                               .subject('Test Subject')
+                               .text_content('Test content')
+                               .webhook_data(data)
+                               .build
+      end
+
+      expect { build.call({ 'é' * 25 => 'é' * 50 }) }.not_to raise_error
+      expect { build.call({ 'é' * 26 => 'value' }) }.to raise_error(Laneful::ValidationException, /50 bytes/)
+      expect { build.call({ 'key' => 'é' * 51 }) }.to raise_error(Laneful::ValidationException, /100 bytes/)
+    end
   end
 
   describe '#==' do
